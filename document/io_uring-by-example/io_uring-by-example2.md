@@ -1,12 +1,8 @@
 # io_uring 从原理到动手实践 part2: liburing
 
-## 原文
+## 前言
 
-感觉目前看到介绍 io_uring 的文章还是比较少，大部分都集中在对其原理性的介绍和简单的对官方文档的翻译，真正结合实际的例子还是比较少。本文翻译整理自一篇博客：
-
-[io-uring-by-example-part-1-introduction](https://unixism.net/2020/04/io-uring-by-example-part-1-introduction/)
-
-同时也增加了一些自己的理解; 另外，在 2020 年，C++ 也正式将协程 coroutine 加入标准，在这之后, 我尝试使用 io_uring 和 c++ 协程实现了一个高性能web服务器，并进行了一些性能测试，具体代码会放在这个仓库里面，同时也包含了这篇文档以及所需的代码：
+上一篇提及了 io_uring 的基本使用方式
 
 ## 使用 liburing 的 cat
 

@@ -91,12 +91,11 @@ auto echo_read(size_t message_size, unsigned flags) {
         this->p = &p;
     }
     size_t await_resume() {
-        //std::cout << "echo_read await_resume " << p->res << ' ' << p->conn_info.fd << '\n';
         return p->res;
     }
     size_t message_size;
     unsigned flags;
-    conn_task::promise_type* p;
+    conn_task::promise_type* p = NULL;
   };
   return awaitable{message_size, flags};
 }
@@ -109,13 +108,10 @@ auto echo_write(size_t message_size, unsigned flags) {
         struct io_uring_sqe *sqe = io_uring_get_sqe(p.ring);
         io_uring_prep_send(sqe, p.conn_info.fd, &bufs[p.conn_info.bid], message_size, 0);
         io_uring_sqe_set_flags(sqe, flags);
-        //printf("%.*s\n",message_size, &bufs[p.conn_info.bid]);
         p.conn_info.type = WRITE;
-        //std::cout << "echo_write await_suspend " << p.conn_info.fd <<' ' << p.conn_info.bid << '\n';
         memcpy(&sqe->user_data, &p.conn_info, sizeof(conn_info));
     }
     size_t await_resume() {
-        //std::cout << "echo_write await_resume" << '\n';
         return 0;
     }
     size_t message_size;
@@ -131,14 +127,11 @@ auto echo_add_buffer() {
         auto &p = h.promise();
         struct io_uring_sqe *sqe = io_uring_get_sqe(p.ring);
         io_uring_prep_provide_buffers(sqe, bufs[p.conn_info.bid], MAX_MESSAGE_LEN, 1, group_id, p.conn_info.bid);
-
         p.conn_info.type = PROV_BUF;
-        //std::cout << "echo_add_buffer await_suspend " << p.conn_info.fd <<' ' << p.conn_info.bid << '\n';
         memcpy(&sqe->user_data, &p.conn_info, sizeof(conn_info));
         h.resume();
     }
     size_t await_resume() {
-        //std::cout << "echo_add_buffer await_resume" << '\n';
         return 0;
     }
   };
@@ -256,8 +249,6 @@ int main(int argc, char *argv[]) {
                 fflush(stdout);
                 exit(1);
             } else if (type == PROV_BUF) {
-                //auto &h = connections.at(conn_i.fd).handler;
-                //h.resume();
                 if (cqe->res < 0) {
                     printf("cqe->res = %d\n", cqe->res);
                     exit(1);
@@ -272,7 +263,6 @@ int main(int argc, char *argv[]) {
                     p.conn_info.fd = sock_conn_fd;
                     p.ring = &ring;
                     h.resume();
-                    //add_socket_read(&ring, sock_conn_fd, group_id, MAX_MESSAGE_LEN, IOSQE_BUFFER_SELECT);
                 }
 
                 // new connected client; read data from socket and re-add accept to monitor for new connections
@@ -283,24 +273,9 @@ int main(int argc, char *argv[]) {
                 p.conn_info.bid = cqe->flags >> 16;
                 p.res = cqe->res;
                 h.resume();
-                /*
-                if (cqe->res <= 0) {
-                    // read failed, re-add the buffer
-                    add_provide_buf(&ring, bid, group_id);
-                    // connection closed or error
-                    shutdown(conn_i.fd, SHUT_RDWR);
-                } else {
-                    // bytes have been read into bufs, now add write to socket sqe
-                    add_socket_write(&ring, conn_i.fd, bid, bytes_read, 0);
-                }
-                */
             } else if (type == WRITE) {
                 auto &h = connections.at(conn_i.fd).handler;
                 h.resume();
-                // write has been completed, first re-add the buffer
-                // add_provide_buf(&ring, conn_i.bid, group_id);
-                // add a new read for the existing connection
-                // add_socket_read(&ring, conn_i.fd, group_id, MAX_MESSAGE_LEN, IOSQE_BUFFER_SELECT);
             }
         }
 
