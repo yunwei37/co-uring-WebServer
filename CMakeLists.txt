@@ -11,6 +11,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize
 set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
 set(CMAKE_SOURCE_DIR "server")
+set(CMAKE_TEST_DIR "test")
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
@@ -19,3 +20,7 @@ link_libraries(uring)
 add_executable (co-uring-server
    "${CMAKE_SOURCE_DIR}/main.cpp" 
    )
+
+add_executable (test-client
+   "${CMAKE_TEST_DIR}/client.cpp" 
+)

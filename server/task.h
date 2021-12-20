@@ -6,6 +6,25 @@
 #include <memory>
 #include <iostream>
 
+enum task_option {
+    ACCEPT,
+    READ,
+    WRITE,
+    OPEN,
+    PROV_BUF,
+};
+
+union request {
+    struct{
+            short event_type;
+            short bid;
+            int client_socket;
+    };
+    unsigned long long uring_data;
+};
+
+static_assert(sizeof(request) == 8);
+
 struct task {
     struct promise_type
     {
@@ -20,9 +39,9 @@ struct task {
         std::suspend_never final_suspend() noexcept { return {}; }
         void return_void() noexcept {}
         void unhandled_exception() noexcept {}
-        struct io_uring *ring;
-        //struct conn_info conn_info;  
-        //size_t res;
+        
+        request request_info;  
+        size_t res;
     };
     explicit task(promise_type::Handle handler) : handler(handler) {}
     void destroy() { handler.destroy(); }
