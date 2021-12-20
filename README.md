@@ -11,6 +11,7 @@ This repo also contains a series of learning materials for c++20 and io_uring, a
 
 - 使用带有 IORING_OP_PROVIDE_BUFFERS 和 IORING_FEAT_FAST_POLL 的 io_uring 技术进行非阻塞 IO 请求，避免系统调用开销以及用户态-内核态内存复制；
 - 采用 c++20 std::coroutine 处理异步回调；
+- TODO: 线程池
 - TODO
 
 ## demos to learn C++20, io_uring and test benchmark
@@ -27,6 +28,8 @@ This repo also contains a series of learning materials for c++20 and io_uring, a
 - Linux 5.7 or higher with IORING_FEAT_FAST_POLL and IORING_OP_PROVIDE_BUFFERS required
 - gcc 10.0 or higher
 
+## build
+
 ## Document in Chinese
 
 这里也包含了一些在学习 c++20 与 io_uring 相关知识的时候，翻译和撰写的中文文档，以及对应的原型实现：
@@ -36,13 +39,13 @@ This repo also contains a series of learning materials for c++20 and io_uring, a
   - [io_uring 从原理到动手实践 part2: liburing](document\io_uring-by-example\io_uring-by-example2.md)
   - [io_uring 从原理到动手实践 part3: 使用 liburing 实现的一个网络服务器](document\io_uring-by-example\io_uring-by-example3.md)
 - c++20 协程：
-  - [使用 c++20 协程与 io_uring 实现高性能web服务器 part1：从 echo server 开始](document\part1.md)
+  - TODO
+- [使用 c++20 协程与 io_uring 实现高性能web服务器 part1：从 echo server 开始](document\part1.md)
 
 ## benchmark
 
-- for echo server：
-
-TODO
+- for echo server： see [document/part1.md](document/part1.md)
+- TODO
 
 ## reference
 
@@ -57,4 +60,6 @@ repos:
 
 articles:
 
-TODO
+- cpp reference [en.cppreference.com/w/cpp/language/coroutines](https://en.cppreference.com/w/cpp/language/coroutines)
+- modernescpp [www.modernescpp.com/index.php/tag/coroutines](https://www.modernescpp.com/index.php/tag/coroutines)
+- 

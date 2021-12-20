@@ -174,6 +174,64 @@ do
 done
 ```
 
+# /usr/bin/time
+
+```
+yunwei@ubuntu:~/Desktop/co-uring$ /usr/bin/time --verbose build/demo/io_uring_coroutine_echo_server 1234
+io_uring echo server listening for connections on port: 1234
+Command terminated by signal 2
+	Command being timed: "build/demo/io_uring_coroutine_echo_server 1234"
+	User time (seconds): 0.75
+	System time (seconds): 51.64
+	Percent of CPU this job got: 80%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:05.09
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3656
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 202
+	Voluntary context switches: 38959
+	Involuntary context switches: 56786
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+yunwei@ubuntu:~/Desktop/co-uring$ /usr/bin/time --verbose build/demo/io_uring_echo_server 1234
+io_uring echo server listening for connections on port: 1234
+Command terminated by signal 2
+	Command being timed: "build/demo/io_uring_echo_server 1234"
+	User time (seconds): 0.32
+	System time (seconds): 51.45
+	Percent of CPU this job got: 76%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:07.60
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1776
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 135
+	Voluntary context switches: 36851
+	Involuntary context switches: 53051
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+```
+
+
 ## reference
 
 - [https://github.com/frevib/io_uring-echo-server](https://github.com/frevib/io_uring-echo-server)

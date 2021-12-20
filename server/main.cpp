@@ -129,7 +129,7 @@ int add_accept_request(int server_socket, struct sockaddr_in *client_addr,
     struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
     io_uring_prep_accept(sqe, server_socket, (struct sockaddr *) client_addr,
                          client_addr_len, 0);
-    struct request *req = malloc(sizeof(*req));
+    struct request *req = (struct request*)malloc(sizeof(*req));
     req->event_type = EVENT_TYPE_ACCEPT;
     io_uring_sqe_set_data(sqe, req);
     io_uring_submit(&ring);
@@ -139,7 +139,7 @@ int add_accept_request(int server_socket, struct sockaddr_in *client_addr,
 
 int add_read_request(int client_socket) {
     struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
-    struct request *req = malloc(sizeof(*req) + sizeof(struct iovec));
+    struct request *req = (struct request*)malloc(sizeof(*req) + sizeof(struct iovec));
     req->iov[0].iov_base = malloc(READ_SZ);
     req->iov[0].iov_len = READ_SZ;
     req->event_type = EVENT_TYPE_READ;
@@ -162,7 +162,7 @@ int add_write_request(struct request *req) {
 }
 
 void _send_static_string_content(const char *str, int client_socket) {
-    struct request *req = zh_malloc(sizeof(*req) + sizeof(struct iovec));
+    struct request *req = (struct request*)zh_malloc(sizeof(*req) + sizeof(struct iovec));
     unsigned long slen = strlen(str);
     req->iovec_count = 1;
     req->client_socket = client_socket;
@@ -199,7 +199,7 @@ void handle_http_404(int client_socket) {
 void copy_file_contents(char *file_path, off_t file_size, struct iovec *iov) {
     int fd;
 
-    char *buf = zh_malloc(file_size);
+    char *buf = (char*)zh_malloc(file_size);
     fd = open(file_path, O_RDONLY);
     if (fd < 0)
         fatal_error("open");
@@ -306,13 +306,10 @@ void handle_get_method(char *path, int client_socket) {
      file inside of that directory.
      */
     if (path[strlen(path) - 1] == '/') {
-        strcpy(final_path, "public");
-        strcat(final_path, path);
-        strcat(final_path, "index.html");
+        strcpy(final_path, "index.html");
     }
     else {
-        strcpy(final_path, "public");
-        strcat(final_path, path);
+        strcpy(final_path, path);
     }
 
     /* The stat() system call will give you information about the file
@@ -325,7 +322,7 @@ void handle_get_method(char *path, int client_socket) {
     else {
         /* Check if this is a normal/regular file and not a directory or something else */
         if (S_ISREG(path_stat.st_mode)) {
-            struct request *req = zh_malloc(sizeof(*req) + (sizeof(struct iovec) * 6));
+            struct request *req = (struct request*)zh_malloc(sizeof(*req) + (sizeof(struct iovec) * 6));
             req->iovec_count = 6;
             req->client_socket = client_socket;
             send_headers(final_path, path_stat.st_size, req->iov);
@@ -375,9 +372,9 @@ int get_line(const char *src, char *dest, int dest_sz) {
 int handle_client_request(struct request *req) {
     char http_request[1024];
     /* Get the first line, which will be the request */
-    if(get_line(req->iov[0].iov_base, http_request, sizeof(http_request))) {
+    if(get_line((const char*)(req->iov[0].iov_base), http_request, sizeof(http_request))) {
         fprintf(stderr, "Malformed request\n");
-        exit(1);
+        //exit(1);
     }
     handle_http_method(http_request, req->client_socket);
     return 0;

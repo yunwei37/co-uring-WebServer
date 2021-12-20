@@ -6,13 +6,13 @@
 #include <memory>
 #include <iostream>
 
-struct conn_task {
+struct task {
     struct promise_type
     {
         using Handle = std::coroutine_handle<promise_type>;
-        conn_task get_return_object()
+        task get_return_object()
         {
-            return conn_task{Handle::from_promise(*this)};
+            return task{Handle::from_promise(*this)};
         }
         std::suspend_always initial_suspend() noexcept { 
             return {}; 
@@ -21,15 +21,15 @@ struct conn_task {
         void return_void() noexcept {}
         void unhandled_exception() noexcept {}
         struct io_uring *ring;
-        struct conn_info conn_info;  
-        size_t res;
+        //struct conn_info conn_info;  
+        //size_t res;
     };
-    explicit conn_task(promise_type::Handle handler) : handler(handler) {}
+    explicit task(promise_type::Handle handler) : handler(handler) {}
     void destroy() { handler.destroy(); }
-    conn_task(const conn_task &) = delete;
-    conn_task &operator=(const conn_task &) = delete;
-    conn_task(conn_task &&t) noexcept : handler(t.handler) { t.handler = {}; }
-    conn_task &operator=(conn_task &&t) noexcept
+    task(const task &) = delete;
+    task &operator=(const task &) = delete;
+    task(task &&t) noexcept : handler(t.handler) { t.handler = {}; }
+    task &operator=(task &&t) noexcept
     {
         if (this == &t)
             return *this;
