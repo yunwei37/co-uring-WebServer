@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <map>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -31,6 +31,10 @@ public:
 
     char* get_buffer_pointer(int bid) {
         return buffer[bid];
+    }
+
+    int get_buffer_id(char* buffer) {
+        return (buffer - (char*)this->buffer.get()) / MAX_MESSAGE_LEN;
     }
 
 private:
@@ -76,6 +80,8 @@ io_uring_handler::io_uring_handler(unsigned entries, int sock_listen_fd)
 void io_uring_handler::event_loop(task handle_event(int))
 {
     // start event loop
+    log("start event loop");
+    add_accept_request(sock_listen_fd, (struct sockaddr *)&client_addr, &client_len, 0);
     while (1)
     {
         io_uring_submit_and_wait(&ring, 1);
@@ -109,6 +115,7 @@ void io_uring_handler::event_loop(task handle_event(int))
             {
                 int sock_conn_fd = cqe->res;
                 // only read when there is no error, >= 0
+                log("accept in io_uring_for_each_cqe");
                 if (sock_conn_fd >= 0)
                 {
                     connections.emplace(sock_conn_fd, handle_event(sock_conn_fd));
