@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <map>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include "utils.h"
 #include "task.h"
 
@@ -17,31 +19,36 @@ constexpr size_t BUFFERS_COUNT = 4096;
 class io_uring_handler
 {
 public:
-    io_uring_handler(unsigned entries, unsigned flags, int sock_listen_fd);
-    void event_loop();
+    io_uring_handler(unsigned entries, int sock_listen_fd);
+    void event_loop(task func(int));
     void setup_first_buffer();
     ~io_uring_handler();
-    void add_read_request(int fd, size_t message_size, unsigned flags, request &req);
-    void add_write_request(int fd, size_t message_size, unsigned flags, request &req);
+    void add_read_request(int fd, request &req);
+    void add_write_request(int fd, size_t message_size, request &req);
     void add_accept_request(int fd, struct sockaddr *client_addr, socklen_t *client_len, unsigned flags);
     void add_buffer_request(request &req);
     void add_open_request();
+
+    char* get_buffer_pointer(int bid) {
+        return buffer[bid];
+    }
 
 private:
     struct io_uring ring;
     std::unique_ptr<char[][2048]> buffer;
     std::map<int, task> connections;
     struct sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
     int sock_listen_fd;
 };
 
-io_uring_handler::io_uring_handler(unsigned entries, unsigned flags, int sock_listen_fd)
+io_uring_handler::io_uring_handler(unsigned entries, int sock_listen_fd)
 {
     struct io_uring_params params;
     memset(&params, 0, sizeof(params));
     this->sock_listen_fd = sock_listen_fd;
 
-    if (io_uring_queue_init_params(2048, &ring, &params) < 0)
+    if (io_uring_queue_init_params(entries, &ring, &params) < 0)
     {
         perror("io_uring_init_failed...\n");
         exit(1);
@@ -66,7 +73,7 @@ io_uring_handler::io_uring_handler(unsigned entries, unsigned flags, int sock_li
     setup_first_buffer();
 }
 
-void io_uring_handler::event_loop()
+void io_uring_handler::event_loop(task handle_event(int))
 {
     // start event loop
     while (1)
@@ -104,11 +111,11 @@ void io_uring_handler::event_loop()
                 // only read when there is no error, >= 0
                 if (sock_conn_fd >= 0)
                 {
-                    connections.emplace(sock_conn_fd, handle_echo(sock_conn_fd));
+                    connections.emplace(sock_conn_fd, handle_event(sock_conn_fd));
                     auto &h = connections.at(sock_conn_fd).handler;
                     auto &p = h.promise();
-                    p.conn_info.fd = sock_conn_fd;
-                    p.ring = &ring;
+                    p.request_info.client_socket = sock_conn_fd;
+                    p.uring = this;
                     h.resume();
                 }
 
@@ -119,7 +126,7 @@ void io_uring_handler::event_loop()
             {
                 auto &h = connections.at(conn_i.client_socket).handler;
                 auto &p = h.promise();
-                p.conn_info.bid = cqe->flags >> 16;
+                p.request_info.bid = cqe->flags >> 16;
                 p.res = cqe->res;
                 h.resume();
             }
@@ -160,21 +167,21 @@ io_uring_handler::~io_uring_handler()
     io_uring_queue_exit(&ring);
 }
 
-void io_uring_handler::add_read_request(int fd, size_t message_size, unsigned flags, request &req)
+void io_uring_handler::add_read_request(int fd, request &req)
 {
     struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
-    io_uring_prep_recv(sqe, fd, NULL, message_size, 0);
-    io_uring_sqe_set_flags(sqe, flags);
+    io_uring_prep_recv(sqe, fd, NULL, MAX_MESSAGE_LEN, 0);
+    io_uring_sqe_set_flags(sqe, IOSQE_BUFFER_SELECT);
     sqe->buf_group = group_id;
     req.event_type = READ;
     sqe->user_data = req.uring_data;
 }
 
-void io_uring_handler::add_write_request(int fd, size_t message_size, unsigned flags, request &req)
+void io_uring_handler::add_write_request(int fd, size_t message_size, request &req)
 {
     struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
     io_uring_prep_send(sqe, fd, &buffer[req.bid], message_size, 0);
-    io_uring_sqe_set_flags(sqe, flags);
+    io_uring_sqe_set_flags(sqe, 0);
     req.event_type = WRITE;
     sqe->user_data = req.uring_data;
 }
@@ -185,10 +192,11 @@ void io_uring_handler::add_accept_request(int fd, struct sockaddr *client_addr, 
     io_uring_prep_accept(sqe, fd, client_addr, client_len, 0);
     io_uring_sqe_set_flags(sqe, flags);
 
-    request conn_i = {
-        .client_socket = (unsigned int)fd,
-        .event_type = ACCEPT,
-        .bid = 0};
+    request conn_i;
+    conn_i.event_type = ACCEPT;
+    conn_i.bid = 0;
+    conn_i.client_socket = fd;
+
     sqe->user_data = conn_i.uring_data;
 }
 

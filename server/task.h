@@ -23,7 +23,9 @@ union request {
     unsigned long long uring_data;
 };
 
-static_assert(sizeof(request) == 8);
+static_assert(sizeof(request) == sizeof(unsigned long long));
+
+class io_uring_handler;
 
 struct task {
     struct promise_type
@@ -41,6 +43,7 @@ struct task {
         void unhandled_exception() noexcept {}
         
         request request_info;  
+        io_uring_handler *uring;
         size_t res;
     };
     explicit task(promise_type::Handle handler) : handler(handler) {}

@@ -2,6 +2,7 @@
 #define HTTPCONNECTION_H
 
 #include <coroutine>
+#include <string>
 #include "stream.h"
 
 constexpr int FILENAME_LEN = 200;
@@ -38,17 +39,12 @@ public:
 public:
     http_conn() {}
     ~http_conn() {}
-    task handle_client_request(int client_fd);
+    HTTP_CODE handle_request(char *text_buffer);
 
 private:
-    void init();
-    HTTP_CODE process_read();
+    HTTP_CODE parse_request(char *text);
     bool process_write(HTTP_CODE ret);
-    HTTP_CODE parse_request_line(char *text);
-    HTTP_CODE parse_headers(char *text);
-    HTTP_CODE parse_content(char *text);
     HTTP_CODE do_request();
-    void unmap();
     bool add_response(const char *format, ...);
     bool add_content(const char *content);
     bool add_headers(int content_length);
@@ -91,9 +87,5 @@ const char *http_conn::http_404_content = \
         "</body>"
         "</html>";
 
-task http_conn::handle_client_request(int client_fd) {
-    
-    co_return;
-}
 
 #endif

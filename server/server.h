@@ -8,6 +8,9 @@
 #include <signal.h>
 #include <map>
 #include "task.h"
+#include "stream.h"
+
+constexpr size_t ENTRIES = 2048;
 
 class server
 {
@@ -56,11 +59,23 @@ void server::setup_listening_socket(int port)
 server::server(int port)
 {
     setup_listening_socket(port);
+    uring.reset(new io_uring_handler(ENTRIES, sock_fd));
 }
 
 server::~server()
 {
 }
 
+task handle_http_request(int fd) {
+    char* read_buffer;
+    size_t read_bytes = co_await read_socket(&read_buffer);
+    co_await write_socket(read_bytes);
+    co_return;
+}
+
+
+void server::start() {
+    uring->event_loop(handle_http_request);
+}
 
 #endif

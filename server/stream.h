@@ -3,32 +3,55 @@
 
 #include <coroutine>
 #include <memory>
-#include "task.h"
+#include "io_uring.h"
 
-class stream_base
+struct stream_base
 {
-    int fd;
+    task::promise_type *promise = NULL;
+    size_t message_size;
 };
 
-class read_awaitable: stream_base
+struct read_socket_awaitable : public stream_base
 {
     bool await_ready() { return false; }
-    void await_suspend(std::coroutine_handle<conn_task::promise_type> h) {
-        auto &p = h.promise();
-        
-        this->p = &p;
+    void await_suspend(std::coroutine_handle<task::promise_type> h)
+    {
+        auto &promise = h.promise();
+
+        this->promise = &promise;
+        promise.uring->add_read_request(promise.request_info.client_socket, promise.request_info);
     }
-    size_t await_resume() {
-        return p->res;
+    size_t await_resume()
+    {   
+        *buffer_pointer = promise->uring->
+            get_buffer_pointer(promise->request_info.bid);
+        return promise->res;
     }
-    size_t message_size;
-    unsigned flags;
-    conn_task::promise_type* p = NULL;
+    char** buffer_pointer;
 };
 
-class write_awaitable: stream_base
+struct write_socket_awaitable : public stream_base
 {
+    bool await_ready() { return false; }
+    void await_suspend(std::coroutine_handle<task::promise_type> h)
+    {
+        auto &promise = h.promise();
 
+        this->promise = &promise;
+        promise.uring->add_write_request(promise.request_info.client_socket, message_size, promise.request_info);
+    }
+    size_t await_resume()
+    {
+        return promise->res;
+    }
 };
+
+auto read_socket(char** buffer_pointer){
+    return read_socket_awaitable{nullptr, 0, buffer_pointer};
+}
+
+auto write_socket(size_t message_size){
+    return write_socket_awaitable{nullptr, message_size};
+}
 
 #endif
