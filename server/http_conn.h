@@ -110,7 +110,7 @@ void http_conn::add_content() {
         fatal_error("open");
 
     /* We should really check for short reads here */
-    size_t ret = read(fd, response_pointer, file_size);
+    size_t ret = read(fd, response_pointer, 2048);
     response_pointer[ret] = 0;
     close(fd);
 }
@@ -227,6 +227,5 @@ http_conn::HTTP_CODE http_conn::parse_request(char *text) {
 size_t http_conn::get_response_size() {
     return response_size;
 }
-
 
 #endif

@@ -12,7 +12,7 @@ clean:
 liburing:
 	+$(MAKE) -C ./liburing
 
-make_build:
+make_build: clean
 	mkdir $(build_dir)
 
 io_uring_echo_server: make_build
