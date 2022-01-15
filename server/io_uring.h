@@ -28,6 +28,7 @@ public:
     void add_accept_request(int fd, struct sockaddr *client_addr, socklen_t *client_len, unsigned flags);
     void add_buffer_request(request &req);
     void add_open_request();
+    void add_close_request(int fd);
 
     char* get_buffer_pointer(int bid) {
         return buffer[bid];
@@ -140,6 +141,7 @@ void io_uring_handler::event_loop(task handle_event(int))
             else if (type == WRITE)
             {
                 auto &h = connections.at(conn_i.client_socket).handler;
+                h.promise().res = cqe->res;
                 h.resume();
             }
         }
@@ -184,6 +186,13 @@ void io_uring_handler::add_read_request(int fd, request &req)
     sqe->user_data = req.uring_data;
 }
 
+void io_uring_handler::add_close_request(int fd)
+{
+    shutdown(fd, SHUT_RDWR);
+    connections.erase(fd);
+}
+
+
 void io_uring_handler::add_write_request(int fd, size_t message_size, request &req)
 {
     struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
@@ -191,6 +200,7 @@ void io_uring_handler::add_write_request(int fd, size_t message_size, request &r
     io_uring_sqe_set_flags(sqe, 0);
     req.event_type = WRITE;
     sqe->user_data = req.uring_data;
+    log("add_write_request %lu", message_size);
 }
 
 void io_uring_handler::add_accept_request(int fd, struct sockaddr *client_addr, socklen_t *client_len, unsigned flags)

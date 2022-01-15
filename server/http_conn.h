@@ -112,6 +112,7 @@ void http_conn::add_content() {
     /* We should really check for short reads here */
     size_t ret = read(fd, response_pointer, 2048);
     response_pointer[ret] = 0;
+    response_pointer += ret;
     close(fd);
 }
 
@@ -175,6 +176,7 @@ http_conn::HTTP_CODE http_conn::handle_request(char *text_buffer) {
         response_pointer = text_buffer;
         add_headers();
         add_content();
+        response_size = response_pointer - text_buffer;
     }
     return code;
 }

@@ -75,9 +75,11 @@ task handle_http_request(int fd) {
     log("accept request %d", fd);
     size_t read_bytes = co_await read_socket(&read_buffer);
     read_buffer[read_bytes] = 0;
-    log("read_buffer %ld %s", read_bytes, read_buffer);
+    log("read_buffer %lu %s", read_bytes, read_buffer);
     conn.handle_request(read_buffer);
-    co_await write_socket(read_buffer, conn.get_response_size());
+    size_t write_bytes = co_await write_socket(read_buffer, conn.get_response_size());
+    log("write_buffer %lu %s", write_bytes, read_buffer);
+    co_await shutdown_socket(fd);
     co_return;
 }
 
