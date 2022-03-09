@@ -16,12 +16,12 @@ This repo also contains a series of learning materials for c++20 and io_uring, a
 
 ## demos to learn C++20, io_uring and test benchmark
 
-- [io_uring_coroutine_echo_server.cpp](demo\io_uring_coroutine_echo_server.cpp) an echo server with liburing and cpp coroutine
-- [io_uring_echo_server.c](demo\io_uring_echo_server.c) an echo server with liburing in c
-- [io_uring_echo_server.cpp](demo\io_uring_echo_server.cpp) an echo server with liburing in cpp
-- [uring_server.c](demo\uring_server.c) a basic static server with liburing
-- [liburing_cat.cpp](demo\liburing_cat.c) a cat program with liburing
-- [uring_cat.cpp](demo\uring_cat.c) a cat program using io_uring syscall interface
+- [io_uring_coroutine_echo_server.cpp](demo/io_uring_coroutine_echo_server.cpp) an echo server with liburing and cpp coroutine
+- [io_uring_echo_server.c](demo/io_uring_echo_server.c) an echo server with liburing in c
+- [io_uring_echo_server.cpp](demo/io_uring_echo_server.cpp) an echo server with liburing in cpp
+- [uring_server.c](demo/uring_server.c) a basic static server with liburing
+- [liburing_cat.cpp](demo/liburing_cat.c) a cat program with liburing
+- [uring_cat.cpp](demo/uring_cat.c) a cat program using io_uring syscall interface
 
 ## requirements
 
@@ -35,12 +35,12 @@ This repo also contains a series of learning materials for c++20 and io_uring, a
 这里也包含了一些在学习 c++20 与 io_uring 相关知识的时候，翻译和撰写的中文文档，以及对应的原型实现：
 
 - io_uring 从原理到动手实践: 关于 iouring 的基本使用细节
-  - [io_uring 从原理到动手实践 part1: 使用系统调用接口实现 cat 程序](document\io_uring-by-example\io_uring-by-example1.md)
-  - [io_uring 从原理到动手实践 part2: liburing](document\io_uring-by-example\io_uring-by-example2.md)
-  - [io_uring 从原理到动手实践 part3: 使用 liburing 实现的一个网络服务器](document\io_uring-by-example\io_uring-by-example3.md)
+  - [io_uring 从原理到动手实践 part1: 使用系统调用接口实现 cat 程序](document/io_uring-by-example/io_uring-by-example1.md)
+  - [io_uring 从原理到动手实践 part2: liburing](document/io_uring-by-example/io_uring-by-example2.md)
+  - [io_uring 从原理到动手实践 part3: 使用 liburing 实现的一个网络服务器](document/io_uring-by-example/io_uring-by-example3.md) TODO
 - c++20 协程：
   - TODO
-- [使用 c++20 协程与 io_uring 实现高性能web服务器 part1：从 echo server 开始](document\part1.md)
+- [使用 c++20 协程与 io_uring 实现高性能web服务器 part1：从 echo server 开始](document/part1.md)
 
 ## benchmark
 
