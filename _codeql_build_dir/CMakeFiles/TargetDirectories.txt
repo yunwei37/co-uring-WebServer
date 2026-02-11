@@ -1,4 +1,0 @@
-/home/runner/work/co-uring-WebServer/co-uring-WebServer/_codeql_build_dir/CMakeFiles/co-uring-server.dir
-/home/runner/work/co-uring-WebServer/co-uring-WebServer/_codeql_build_dir/CMakeFiles/test-client.dir
-/home/runner/work/co-uring-WebServer/co-uring-WebServer/_codeql_build_dir/CMakeFiles/edit_cache.dir
-/home/runner/work/co-uring-WebServer/co-uring-WebServer/_codeql_build_dir/CMakeFiles/rebuild_cache.dir
