@@ -71,9 +71,11 @@ io_uring_handler::io_uring_handler(unsigned entries, int sock_listen_fd)
     if (!probe || !io_uring_opcode_supported(probe, IORING_OP_PROVIDE_BUFFERS))
     {
         printf("Buffer select not supported, skipping...\n");
+        if (probe)
+            io_uring_free_probe(probe);
         exit(0);
     }
-    free(probe);
+    io_uring_free_probe(probe);
 
     setup_first_buffer();
 }
