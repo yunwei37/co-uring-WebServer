@@ -89,11 +89,11 @@ struct close_awaitable
 {   
     close_awaitable(int fd): fd(fd) {};
     bool await_ready() { return false; }
-    void await_suspend(std::coroutine_handle<task::promise_type> h)
+    bool await_suspend(std::coroutine_handle<task::promise_type> h)
     {
         auto &promise = h.promise();
         promise.uring->add_close_request(fd);
-        h.resume();
+        return false; // Don't suspend, resume immediately
     }
     void await_resume()
     {
