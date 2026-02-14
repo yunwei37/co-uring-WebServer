@@ -88,11 +88,12 @@ struct write_file_awaitable : public write_awaitable
 struct close_awaitable
 {   
     close_awaitable(int fd): fd(fd) {};
-    bool await_ready() { return true; }
-    void await_suspend(std::coroutine_handle<task::promise_type> h)
+    bool await_ready() { return false; }
+    bool await_suspend(std::coroutine_handle<task::promise_type> h)
     {
         auto &promise = h.promise();
         promise.uring->add_close_request(fd);
+        return false; // Don't suspend, resume immediately
     }
     void await_resume()
     {
