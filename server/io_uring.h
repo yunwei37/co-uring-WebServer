@@ -190,9 +190,9 @@ void io_uring_handler::add_read_request(int fd, request &req)
 
 void io_uring_handler::add_close_request(int fd)
 {
+    connections.erase(fd);
     shutdown(fd, SHUT_RDWR);
     close(fd);
-    connections.erase(fd);
 }
 
 
